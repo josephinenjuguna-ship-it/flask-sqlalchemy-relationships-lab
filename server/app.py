@@ -3,7 +3,7 @@
 from flask import Flask, jsonify
 from flask_migrate import Migrate
 
-from models import db, Event, Session, Speaker, Bio
+from app import app, events, Event
 
 app = Flask(__name__)
 
