@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 from flask import Flask, jsonify
@@ -16,8 +15,8 @@ migrate = Migrate(app, db)
 db.init_app(app)
 
 
-
-@app.route('/events')
+# 1. GET ALL EVENTS
+@app.route('/events', methods=['GET'])
 def get_events():
     events = Event.query.all()
 
@@ -33,20 +32,25 @@ def get_events():
     return jsonify(result), 200
 
 
-
-@app.route('/events/<int:id>/sessions')
+# 2. GET ALL SESSIONS FOR A SPECIFIC EVENT
+@app.route('/events/<int:id>/sessions', methods=['GET'])
 def get_event_sessions(id):
     event = Event.query.get(id)
 
     if event is None:
-        return jsonify({"error": "Event not found"}), 404
+        return jsonify({
+            "error": "Event not found"
+        }), 404
 
     result = [
         {
             "id": session.id,
             "title": session.title,
-            "start_time": session.start_time.isoformat()
-            if session.start_time else None
+            "start_time": (
+                session.start_time.isoformat()
+                if session.start_time is not None
+                else None
+            )
         }
         for session in event.sessions
     ]
@@ -54,8 +58,8 @@ def get_event_sessions(id):
     return jsonify(result), 200
 
 
-
-@app.route('/speakers')
+# 3. GET ALL SPEAKERS
+@app.route('/speakers', methods=['GET'])
 def get_speakers():
     speakers = Speaker.query.all()
 
@@ -70,38 +74,48 @@ def get_speakers():
     return jsonify(result), 200
 
 
-
-@app.route('/speakers/<int:id>')
+# 4. GET ONE SPEAKER WITH THEIR BIO
+@app.route('/speakers/<int:id>', methods=['GET'])
 def get_speaker(id):
     speaker = Speaker.query.get(id)
 
     if speaker is None:
-        return jsonify({"error": "Speaker not found"}), 404
+        return jsonify({
+            "error": "Speaker not found"
+        }), 404
 
     result = {
         "id": speaker.id,
         "name": speaker.name,
-        "bio_text": speaker.bio.bio_text
-        if speaker.bio else "No bio available"
+        "bio_text": (
+            speaker.bio.bio_text
+            if speaker.bio is not None
+            else "No bio available"
+        )
     }
 
     return jsonify(result), 200
 
 
-
-@app.route('/sessions/<int:id>/speakers')
+# 5. GET ALL SPEAKERS FOR A SESSION
+@app.route('/sessions/<int:id>/speakers', methods=['GET'])
 def get_session_speakers(id):
     session = Session.query.get(id)
 
     if session is None:
-        return jsonify({"error": "Session not found"}), 404
+        return jsonify({
+            "error": "Session not found"
+        }), 404
 
     result = [
         {
             "id": speaker.id,
             "name": speaker.name,
-            "bio_text": speaker.bio.bio_text
-            if speaker.bio else "No bio available"
+            "bio_text": (
+                speaker.bio.bio_text
+                if speaker.bio is not None
+                else "No bio available"
+            )
         }
         for speaker in session.speakers
     ]
